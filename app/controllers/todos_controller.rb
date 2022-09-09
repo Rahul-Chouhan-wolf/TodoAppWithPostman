@@ -3,24 +3,25 @@ class TodosController < ApplicationController
             before_action :Task_id , only: [ :show , :update , :destroy]
 
         def index
-        
             @Task_data = Todo.all.page params[:page]
-            if @Task_data
+            @pagination_ends = @Task_data.empty?
+            if @pagination_ends === false
                 render json: @Task_data 
             else
-                render json: {meassage: 'The database is empty.'}
+                render json: {meassage: 'The database was only upto this page.'}
             end
         end
 
-        # def show
-        #     if @Task_id_data
-        #         render json: @Task_id_data
-        #     else
-        #         render json: {message: 'The id is not in the database or there is some mistake in the id.'}
-        #     end
-        # end
+        def show
+            if @Task_id_data
+                render json: @Task_id_data
+            else
+                render json: {message: 'The id is not in the database or there is some mistake in the id.'}
+            end
+        end
 
         def create
+           
             @Task_create = Todo.create(params_data)
             if @Task_create.save()
                 render json: @Task_create
@@ -53,10 +54,19 @@ class TodosController < ApplicationController
             end
         end
 
+        def find_by_tag
+            @Task_tag = Todo.where(tags: params[:tags])
+            if @Task_tag
+                render json: @Task_tag
+            else
+                render json: {message: 'Please enter an appropriate tag.'}
+            end
+        end
+
         private
             def params_data
                 params.permit(:TaskName , :TaskDescription ,
-                :status , :tags)
+                :status , :tags => [])
             end
             def Task_id
                 if Todo.find(params[:id]).empty?
